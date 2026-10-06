@@ -1,0 +1,23 @@
+# Pay & Bill department
+# Triggered by new timesheet CSVs in workspace/inbox/timesheets/
+id: pay_bill
+name: Pay & Bill
+agents:
+  - id: invoicing
+    name: Invoicing & Payroll
+    needs_llm: false
+    tools: [process_timesheet, request_approval, complete_task]
+    approval: required          # invoices and payroll exports are released only after a human approves
+    on_approve: release_invoices
+    pipeline:
+      - tool: process_timesheet
+        args: {path: "{input.timesheet}"}
+        save_as: run
+      - tool: request_approval
+        args:
+          summary: "{run.summary}"
+          artifacts: "{run.artifacts}"
+    system: |
+      You are the Invoicing & Payroll agent. Process the timesheet with process_timesheet,
+      which builds per-client invoices and a payroll export and flags anomalies. Then call
+      request_approval with the summary and artifact paths. Never release invoices yourself.

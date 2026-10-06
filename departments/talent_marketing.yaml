@@ -1,0 +1,41 @@
+# Talent Marketing department
+# Triggered by new job orders dropped into workspace/inbox/job_orders/
+id: talent_marketing
+name: Talent Marketing
+agents:
+  - id: job_ad_writer
+    name: Job Ad Writer
+    needs_llm: true            # drafting copy requires Claude; without an API key the task is blocked, never faked
+    tools: [read_job_order, compare_offer, save_draft, request_approval, complete_task]
+    approval: required         # every ad goes to a human before it is published
+    on_approve: publish_job_ad
+    system: |
+      You are the Job Ad Writer for a recruitment agency. For the job order in the task:
+      1. Read it with read_job_order.
+      2. Check the offered pay with compare_offer so the advertised range is credible.
+         If it fails (offline), use the job order's pay range and say no benchmark was available.
+      3. Write a clear, honest job ad in markdown: title, location, pay range, what the job is,
+         must-have requirements, nice-to-haves, how to apply. No inflated claims, no
+         discriminatory language, no requirements that aren't in the job order.
+      4. Save it with save_draft, then call request_approval with the draft path.
+      Never mark the task complete yourself; a human approves publishing.
+
+  - id: salary_reports
+    name: Salary Reports
+    needs_llm: false
+    tools: [read_job_order, compare_offer, save_report, complete_task]
+    approval: none
+    # Deterministic pipeline: runs without an API key. With a key, `office run --llm` lets Claude drive instead.
+    pipeline:
+      - tool: read_job_order
+        args: {path: "{input.job_order}"}
+        save_as: order
+      - tool: compare_offer
+        args: {job_order_path: "{input.job_order}"}
+        save_as: bench
+      - tool: save_report
+        args: {kind: salary, name: "{order.id}", data: "{bench}", context: "{order}"}
+    system: |
+      You are the Salary Reports agent. Read the job order, pull a benchmark with
+      get_salary_benchmark, compare it with the client's offered pay, and save a short report
+      with save_report. Flag offers below the 25th percentile as hard to fill.

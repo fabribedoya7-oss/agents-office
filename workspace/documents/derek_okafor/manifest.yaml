@@ -1,0 +1,4 @@
+# SAMPLE document manifest (fictional candidate)
+documents:
+  - {type: government_id, file: id.pdf, expires: 2030-01-09}
+  - {type: forklift_certification, file: forklift_cert.pdf, expires: 2026-08-01}

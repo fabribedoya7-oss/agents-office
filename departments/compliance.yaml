@@ -1,0 +1,22 @@
+# Compliance department
+# Triggered by the Resume Screener when a candidate is shortlisted.
+id: compliance
+name: Compliance
+agents:
+  - id: compliance_checker
+    name: Compliance Checker
+    needs_llm: false
+    tools: [check_compliance, save_report, update_candidate_status, complete_task]
+    approval: none
+    pipeline:
+      - tool: check_compliance
+        args: {candidate_id: "{input.candidate}", job_order_path: "{input.job_order}"}
+        save_as: check
+      - tool: save_report
+        args: {kind: compliance, name: "{input.candidate}", data: "{check}"}
+      - tool: update_candidate_status
+        args: {candidate_id: "{input.candidate}", status: "{check.candidate_status}"}
+    system: |
+      You are the Compliance Checker. Run check_compliance for the candidate against the
+      job's required documents, save the report, and update the candidate's status to
+      cleared or docs_missing. Report exactly what is missing or expired.

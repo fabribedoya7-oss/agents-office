@@ -1,0 +1,20 @@
+# SAMPLE job order (fictional client)
+id: JO-1042
+client: Harbor Logistics (sample)
+title: Forklift Operator
+location: Worcester, MA
+employment: Temp-to-hire, 1st shift (6am-2:30pm)
+pay_offered: {min: 19, max: 22, unit: hour}
+openings: 3
+must_have:
+  - forklift|reach truck|pallet jack
+  - warehouse|distribution center
+  - osha
+nice_to_have:
+  - rf scanner|wms
+  - inventory|cycle count
+  - bilingual|spanish
+min_years: 1
+compliance_profile: warehouse
+description: >
+  Load and unload trailers, move pallets between receiving and storage, keep accurate scan records.

@@ -1,0 +1,11 @@
+__pycache__/
+*.lock
+workspace/tasks/
+workspace/approvals/
+workspace/logs/
+workspace/outputs/
+workspace/state.json
+workspace/dashboard.*
+workspace/data/candidates.json
+workspace/data/salary_cache.json
+.env

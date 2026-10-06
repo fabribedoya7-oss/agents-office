@@ -1,0 +1,4 @@
+# Required documents per job profile. Job orders pick one with `compliance_profile:`.
+default: [government_id, right_to_work]
+warehouse: [government_id, right_to_work, forklift_certification]
+healthcare: [government_id, right_to_work, nursing_license, bls_certification, background_check, tb_test]

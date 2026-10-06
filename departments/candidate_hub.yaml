@@ -1,0 +1,31 @@
+# Candidate Hub department
+# Triggered by new resumes in workspace/inbox/resumes/<job_order_id>/
+id: candidate_hub
+name: Candidate Hub
+agents:
+  - id: resume_screener
+    name: Resume Screener
+    needs_llm: false
+    tools: [read_job_order, read_resume, screen_resume, upsert_candidate, create_task, complete_task]
+    approval: none
+    pipeline:
+      - tool: read_job_order
+        args: {path: "{input.job_order}"}
+        save_as: order
+      - tool: screen_resume
+        args: {resume_path: "{input.resume}", job_order_path: "{input.job_order}"}
+        save_as: screen
+      - tool: upsert_candidate
+        args: {record: "{screen}"}
+      - tool: create_task
+        when: "screen.decision == 'shortlist'"
+        args:
+          department: compliance
+          agent: compliance_checker
+          title: "Compliance check: {screen.name} for {order.title}"
+          input: {candidate: "{screen.candidate_id}", job_order: "{input.job_order}"}
+    system: |
+      You are the Resume Screener. Score the resume against the job order with screen_resume,
+      record the result with upsert_candidate, and if the candidate is shortlisted create a
+      compliance task for them. Judge only on job-relevant requirements. Never use age,
+      gender, ethnicity, religion, disability, or other protected traits.

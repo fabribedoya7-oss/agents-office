@@ -1,0 +1,16 @@
+# Intake rules: the watcher turns new files into tasks.
+# Add a department by adding its YAML under departments/ and, if it reacts to files, a rule here.
+rules:
+  - watch: inbox/job_orders/*.yaml
+    tasks:
+      - {department: talent_marketing, agent: salary_reports, title: "Salary report: {stem}", input: {job_order: "{path}"}}
+      - {department: talent_marketing, agent: job_ad_writer, title: "Job ad: {stem}", input: {job_order: "{path}"}}
+
+  - watch: inbox/resumes/*/*
+    # folder name = job order id, e.g. inbox/resumes/JO-1042/jane_doe.pdf
+    tasks:
+      - {department: candidate_hub, agent: resume_screener, title: "Screen {name} for {parent}", input: {resume: "{path}", job_order: "inbox/job_orders/{parent}.yaml"}}
+
+  - watch: inbox/timesheets/*.csv
+    tasks:
+      - {department: pay_bill, agent: invoicing, title: "Process timesheet {stem}", input: {timesheet: "{path}"}}

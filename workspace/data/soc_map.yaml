@@ -1,0 +1,9 @@
+# Job title keywords -> BLS Standard Occupational Classification (SOC) code.
+# First match wins, so put specific titles before general ones.
+- {soc: "537051", title: "Industrial Truck and Tractor Operators", keywords: [forklift, reach truck, industrial truck]}
+- {soc: "537062", title: "Laborers and Freight, Stock, and Material Movers, Hand", keywords: [warehouse associate, material handler, picker, packer]}
+- {soc: "291141", title: "Registered Nurses", keywords: [registered nurse, rn ]}
+- {soc: "292061", title: "Licensed Practical and Licensed Vocational Nurses", keywords: [lpn, practical nurse]}
+- {soc: "533032", title: "Heavy and Tractor-Trailer Truck Drivers", keywords: [cdl, truck driver, tractor-trailer]}
+- {soc: "132011", title: "Accountants and Auditors", keywords: [accountant, auditor]}
+- {soc: "434051", title: "Customer Service Representatives", keywords: [customer service]}

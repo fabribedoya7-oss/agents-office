@@ -1,0 +1,19 @@
+# SAMPLE job order (fictional client)
+id: JO-1043
+client: Northgate Medical (sample)
+title: Registered Nurse - Med/Surg
+location: Lowell, MA
+employment: 13-week contract, nights
+pay_offered: {min: 44, max: 50, unit: hour}
+openings: 2
+must_have:
+  - registered nurse|rn license|bsn
+  - med/surg|medical-surgical
+  - epic|cerner|ehr
+nice_to_have:
+  - telemetry
+  - acls
+min_years: 2
+compliance_profile: healthcare
+description: >
+  Provide direct care for 5-6 patients per shift on a 32-bed med/surg unit.
