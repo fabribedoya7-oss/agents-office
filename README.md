@@ -1,5 +1,7 @@
 # Agents Office
 
+![Demo: reset the office, run every agent on the sample inbox, and end on the dashboard with a payroll batch waiting for approval](docs/demo.gif)
+
 ## What this is
 
 A headless multi-agent office for a recruitment agency, run from the terminal or from Claude over MCP.
