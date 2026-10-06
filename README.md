@@ -66,7 +66,19 @@ claude mcp add agents-office -- python /full/path/to/agents-office/mcp_server.py
 
 Then in Claude Code: "show me the office status", "run a cycle", "what needs approval?".
 Claude gets `office_status`, `office_run_cycle`, `office_add_task`, `office_call_tool`, `office_list_tools`,
-`office_approvals`, `office_decide`, and `office_submit_work` (lets Claude Code write a Claude-only task's draft itself, e.g. the job ad, and send it for approval without an API key). Requires `pip install mcp` (v1 or v2 both work).
+`office_approvals`, `office_decide`, `office_requeue` (send an unfinished task back to be redone), and `office_submit_work` (lets Claude Code write a Claude-only task's draft itself, e.g. the job ad, and send it for approval without an API key). Requires `pip install mcp` (v1 or v2 both work).
+
+## Job order format
+
+Each `must_have` / `nice_to_have` entry has two parts:
+
+```yaml
+must_have:
+  - text: Active Massachusetts RN license          # shown in the job ad exactly as written
+    keywords: [registered nurse, rn license, bsn]  # resume search terms, used only by the screener
+```
+
+`apply_to` holds the "how to apply" line the job ad uses word for word.
 
 ## Adding a department
 

@@ -13,7 +13,18 @@ from . import tool
 CANDIDATES = store.WS / "data" / "candidates.json"
 
 
-@tool("Read a job order YAML (client, title, pay, must-have and nice-to-have requirements).",
+def _check_requirements(order: dict, field: str) -> None:
+    # Each requirement is {text: "shown in ads", keywords: [resume search terms, screener only]}
+    for i, req in enumerate(order.get(field) or []):
+        if not (isinstance(req, dict) and isinstance(req.get("text"), str) and req["text"].strip()
+                and isinstance(req.get("keywords"), list) and req["keywords"]
+                and all(isinstance(k, str) and k.strip() for k in req["keywords"])):
+            raise ValueError(f"job order {order['id']}: {field}[{i}] must be "
+                             f"{{text: <requirement as shown in ads>, keywords: [<resume search terms>]}}, got {req!r}")
+
+
+@tool("Read a job order YAML (client, title, pay, must-have and nice-to-have requirements). "
+      "Each requirement has `text` (exact wording for ads) and `keywords` (resume screener only).",
       {"path": {"type": "string", "description": "path relative to workspace/, e.g. inbox/job_orders/JO-1042.yaml"}})
 def read_job_order(path: str) -> dict:
     p = store.ws_path(path)
@@ -21,6 +32,8 @@ def read_job_order(path: str) -> dict:
         raise FileNotFoundError(f"job order not found: {path}")
     order = yaml.safe_load(p.read_text())
     order.setdefault("id", p.stem)
+    _check_requirements(order, "must_have")
+    _check_requirements(order, "nice_to_have")
     return order
 
 
@@ -45,9 +58,9 @@ def read_resume(path: str) -> dict:
     return {"path": store.rel(p), "chars": len(text), "text": text[:12000]}
 
 
-def _matches(req: str, text: str) -> bool:
-    # "forklift|reach truck" = any synonym counts
-    return any(re.search(r"\b" + re.escape(alt.strip().lower()) + r"\b", text) for alt in req.split("|"))
+def _matches(req: dict, text: str) -> bool:
+    # any keyword counts; the requirement's `text` is never used for matching
+    return any(re.search(r"\b" + re.escape(kw.strip().lower()) + r"\b", text) for kw in req["keywords"])
 
 
 def _years(text: str) -> int:
@@ -90,9 +103,9 @@ def screen_resume(resume_path: str, job_order_path: str) -> dict:
         "score": score,
         "decision": decision,
         "years_experience": yrs,
-        "must_have_met": [m.split("|")[0] for m in must_hit],
-        "must_have_missing": [m.split("|")[0] for m in must if m not in must_hit],
-        "nice_to_have_met": [n.split("|")[0] for n in nice_hit],
+        "must_have_met": [m["keywords"][0] for m in must_hit],
+        "must_have_missing": [m["keywords"][0] for m in must if m not in must_hit],
+        "nice_to_have_met": [n["keywords"][0] for n in nice_hit],
         "resume": store.rel(p),
         "status": {"shortlist": "shortlisted", "review": "needs_review", "reject": "rejected"}[decision],
     }

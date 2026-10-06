@@ -7,13 +7,19 @@ employment: Temp-to-hire, 1st shift (6am-2:30pm)
 pay_offered: {min: 19, max: 22, unit: hour}
 openings: 3
 must_have:
-  - forklift|reach truck|pallet jack
-  - warehouse|distribution center
-  - osha
+  - text: Forklift experience (sit-down, reach truck or pallet jack)
+    keywords: [forklift, reach truck, pallet jack]
+  - text: Warehouse or distribution center experience
+    keywords: [warehouse, distribution center]
+  - text: OSHA safety training
+    keywords: [osha]
 nice_to_have:
-  - rf scanner|wms
-  - inventory|cycle count
-  - bilingual|spanish
+  - text: RF scanner or WMS experience
+    keywords: [rf scanner, wms]
+  - text: Inventory or cycle counting experience
+    keywords: [inventory, cycle count]
+  - text: Bilingual English/Spanish
+    keywords: [bilingual, spanish]
 min_years: 1
 apply_to: "Email your resume to jobs@example-agency.com"
 compliance_profile: warehouse

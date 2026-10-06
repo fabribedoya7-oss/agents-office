@@ -5,7 +5,7 @@ Register it with Claude Code:
     claude mcp add agents-office -- python /path/to/agents-office/mcp_server.py
 
 Claude then sees office_status, office_run_cycle, office_add_task, office_call_tool, office_submit_work,
-office_approvals, office_decide and office_list_tools, and can run the whole office from a conversation.
+office_approvals, office_decide, office_requeue and office_list_tools, and can run the whole office from a conversation.
 Works with the `mcp` Python SDK v1 (FastMCP) or v2 (MCPServer).
 """
 from __future__ import annotations
@@ -87,6 +87,13 @@ def office_submit_work(task_id: str, content: str, summary: str) -> str:
     appr = store.request_approval(store.get_task(task_id), summary, [draft["path"]])
     return json.dumps({"task_id": task_id, "status": "awaiting_approval", "draft": draft["path"],
                        "approval_file": f"approvals/{task_id}.json", "artifacts": appr["artifacts"]}, indent=2)
+
+
+@mcp.tool()
+def office_requeue(task_id: str, note: str = "") -> str:
+    """Send an unfinished task back to the queue to be redone (withdraws its pending approval, clears outputs)."""
+    store.requeue_task(task_id, note=note, by="mcp")
+    return f"{task_id} requeued"
 
 
 @mcp.tool()

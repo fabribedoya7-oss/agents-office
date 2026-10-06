@@ -136,6 +136,31 @@ def update_task(task_id: str, **fields) -> dict:
     return task
 
 
+def requeue_task(task_id: str, note: str = "", by: str = "human") -> dict:
+    """Send a task back to the queue to be redone: withdraws its pending approval and clears its outputs."""
+    task = get_task(task_id)
+    if not task:
+        raise KeyError(f"no task {task_id}")
+    if task["status"] in ("running", "done"):
+        raise ValueError(f"{task_id} is {task['status']}; only unfinished tasks can be requeued")
+    p = APPROVALS / f"{task_id}.json"
+    appr = _read(p, None)
+    if appr and appr.get("decision") is None:
+        appr.update(decision="withdrawn", decided=now(), by=by, note=note, applied=now())
+        _write(p, appr)
+    f = dept_file(task["department"])
+    with _locked(f):
+        tasks = _read(f, [])
+        for t in tasks:
+            if t["id"] == task_id:
+                t["history"].append({"at": now(), "status": "queued", "note": note or f"requeued by {by}"})
+                t.update(status="queued", work_type="placeholder", artifacts=[], note=note, updated=now())
+                task = t
+        _write(f, tasks)
+    log(task["department"], task["agent"], f"requeued by {by}" + (f": {note}" if note else ""), task_id=task_id)
+    return task
+
+
 # ---------------- logs ----------------
 
 def log(dept: str, agent: str, msg: str, task_id: str | None = None, level: str = "info") -> None:

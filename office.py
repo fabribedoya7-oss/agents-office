@@ -6,6 +6,7 @@
   python office.py approvals               list items waiting for a human
   python office.py approve T-XXXXXX [--note ...]
   python office.py reject  T-XXXXXX --note "why"
+  python office.py requeue T-XXXXXX [--note ...]   withdraw a pending approval and queue the task to be redone
   python office.py task add <department> <agent> "<title>" key=value ...
   python office.py tasks [department]      list tasks as JSON
   python office.py check                   validate department YAML against the tool registry
@@ -43,6 +44,10 @@ def main(argv=None) -> int:
         a = sub.add_parser(name)
         a.add_argument("task_id")
         a.add_argument("--note", default="")
+
+    rq = sub.add_parser("requeue")
+    rq.add_argument("task_id")
+    rq.add_argument("--note", default="")
 
     t = sub.add_parser("task")
     t.add_argument("action", choices=["add"])
@@ -84,6 +89,9 @@ def main(argv=None) -> int:
         store.decide(args.task_id, approved=args.cmd == "approve", note=args.note)
         applied = orchestrator.apply_decisions()
         print(f"{args.task_id} {args.cmd}d" + (" and applied." if args.task_id in applied else "."))
+    elif args.cmd == "requeue":
+        store.requeue_task(args.task_id, note=args.note, by="cli")
+        print(f"{args.task_id} requeued.")
     elif args.cmd == "task":
         inp = dict(kv.split("=", 1) for kv in args.kv)
         config.agent_spec(args.department, args.agent)  # fail fast on typos
