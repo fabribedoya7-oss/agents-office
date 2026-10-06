@@ -15,6 +15,7 @@ nice_to_have:
   - inventory|cycle count
   - bilingual|spanish
 min_years: 1
+apply_to: "Email your resume to jobs@example-agency.com"
 compliance_profile: warehouse
 description: >
   Load and unload trailers, move pallets between receiving and storage, keep accurate scan records.

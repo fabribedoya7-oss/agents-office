@@ -9,3 +9,4 @@ workspace/dashboard.*
 workspace/data/candidates.json
 workspace/data/salary_cache.json
 .env
+.mcp.json

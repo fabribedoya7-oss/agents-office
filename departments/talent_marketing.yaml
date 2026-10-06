@@ -17,6 +17,11 @@ agents:
       3. Write a clear, honest job ad in markdown: title, location, pay range, what the job is,
          must-have requirements, nice-to-haves, how to apply. No inflated claims, no
          discriminatory language, no requirements that aren't in the job order.
+         The "How to apply" section must always use the job order's apply_to field verbatim;
+         never invent another contact method. If apply_to is missing, say so in the ad.
+         Never make requirements stricter than the job order: keep every listed alternative
+         (e.g. "RN license or BSN"), keep min_years as written, and don't promote
+         nice-to-haves to must-haves.
       4. Save it with save_draft, then call request_approval with the draft path.
       Never mark the task complete yourself; a human approves publishing.
 
