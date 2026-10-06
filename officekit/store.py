@@ -45,6 +45,7 @@ def ws_path(p: str | Path) -> Path:
 def _locked(path: Path):
     """Tiny lock-file so the watcher, CLI and MCP server don't clobber each other."""
     lock = path.with_suffix(path.suffix + ".lock")
+    lock.parent.mkdir(parents=True, exist_ok=True)  # a fresh clone has no workspace/tasks/ yet
     for _ in range(200):
         try:
             fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
