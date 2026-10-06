@@ -11,6 +11,7 @@ A headless multi-agent office for a recruitment agency, run from the terminal or
 - **Human approval gates:** job ads aren't published and invoices aren't released until a person approves them.
 - **Audit log:** every task keeps its status history, and all agent activity is appended to `workspace/logs/activity.jsonl`.
 - **Real vs. draft labels:** the dashboard marks each task as REAL (a tool wrote files), CLAUDE DRAFT (text waiting for human review), or NO OUTPUT. Nothing is faked.
+- **Live 3D city view:** `python office.py city` shows the office as a neon city in your browser, with one district per department and one building per agent.
 
 All people, clients, resumes, documents, rates and timesheets in this repo are **fictional sample data**.
 
@@ -74,6 +75,23 @@ Every task carries a `work_type` the dashboard shows:
 - **CLAUDE DRAFT**: Claude wrote text (an ad) that a human must review.
 - **NO OUTPUT**: nothing was produced. Blocked and failed tasks say why, e.g. "needs Claude: set ANTHROPIC_API_KEY" or "could not reach BLS". The system never fills a gap with made-up output.
 
+## City view
+
+```bash
+python office.py city              # opens http://127.0.0.1:8765/ in your browser
+python office.py city --port 9000 --no-browser
+```
+
+A live 3D view of the office, built with Three.js and served by a small local web server (Python standard library only).
+
+- **Layout:** each department in `departments/*.yaml` is a district and each agent is a building. Add or remove a department file and the city updates within a couple of seconds, no reload needed.
+- **Building color** shows the agent's state: cyan = working, amber = waiting on a human (pulses), magenta = blocked, violet = queued, teal = idle. Taller buildings have handled more tasks.
+- **Click a building** to see that agent's tasks, each with its status and its REAL / CLAUDE DRAFT / NO OUTPUT label.
+- **Approvals panel:** the side panel lists everything waiting for approval, with copyable `approve` and `reject` commands.
+- **Live data:** while the city is open, the server rewrites `workspace/dashboard.json` every 2 seconds and the page re-reads it. Run `python office.py run --watch` in another terminal to watch agents work.
+
+The server only listens on `127.0.0.1` and serves just the page and `dashboard.json`. The page loads Three.js from cdn.jsdelivr.net, so the 3D view needs an internet connection.
+
 ## Running it from Claude Code (MCP)
 
 ```bash
@@ -102,6 +120,7 @@ must_have:
 2. Add `departments/<name>.yaml` with its agents: `tools`, an optional `pipeline` (runs without an API key), a `system` prompt (used when Claude drives), `approval: required|none`, and an optional `on_approve` action.
 3. If it reacts to files, add a rule to `intake.yaml`.
 4. `python office.py check` validates every agent against the tool registry.
+5. The new department appears in `python office.py city` as its own district automatically.
 
 ## Data sources and limits
 
@@ -117,6 +136,7 @@ mcp_server.py          MCP server for Claude Code / Desktop
 intake.yaml            file -> task rules
 departments/*.yaml     departments, agents, pipelines, prompts, approval rules
 officekit/             runtime: store, orchestrator, agent runner, Claude client, dashboard, tools/
+  city.py, web/        `office.py city`: local server + Three.js city page
 workspace/
   inbox/               drop job orders, resumes, timesheets here
   documents/<cand>/    candidate documents + manifest.yaml

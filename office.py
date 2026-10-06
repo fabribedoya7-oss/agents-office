@@ -3,6 +3,7 @@
 
   python office.py run [--watch] [--llm]   intake new files, run agents until idle (or forever with --watch)
   python office.py dashboard [--live]      show departments, agents, task queues, approvals
+  python office.py city [--port N] [--no-browser]   live 3D neon city of the office in your browser
   python office.py approvals               list items waiting for a human
   python office.py approve T-XXXXXX [--note ...]
   python office.py reject  T-XXXXXX --note "why"
@@ -38,6 +39,11 @@ def main(argv=None) -> int:
     d = sub.add_parser("dashboard")
     d.add_argument("--live", action="store_true")
     d.add_argument("--interval", type=float, default=2.0)
+
+    c = sub.add_parser("city")
+    c.add_argument("--port", type=int, default=8765)
+    c.add_argument("--no-browser", action="store_true", help="don't open the browser automatically")
+    c.add_argument("--interval", type=float, default=2.0, help="seconds between snapshot refreshes")
 
     sub.add_parser("approvals")
     for name in ("approve", "reject"):
@@ -82,6 +88,9 @@ def main(argv=None) -> int:
             if not args.live:
                 break
             time.sleep(args.interval)
+    elif args.cmd == "city":
+        from officekit import city
+        city.serve(port=args.port, open_browser=not args.no_browser, interval=args.interval)
     elif args.cmd == "approvals":
         items = store.pending_approvals()
         print(json.dumps(items, indent=2) if items else "Nothing waiting for approval.")

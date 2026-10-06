@@ -96,9 +96,17 @@ def render(snap: dict, color: bool = True, max_tasks: int = 6) -> str:
     return "\n".join(out)
 
 
+def _write_atomic(name: str, text: str) -> None:
+    # readers (the city page polls dashboard.json) must never see a half-written file
+    p = store.WS / name
+    tmp = p.with_name(p.name + ".tmp")
+    tmp.write_text(text)
+    tmp.replace(p)
+
+
 def write_files(snap: dict) -> None:
-    (store.WS / "dashboard.json").write_text(json.dumps(snap, indent=2, default=str))
-    (store.WS / "dashboard.md").write_text("```\n" + render(snap, color=False, max_tasks=20) + "\n```\n")
+    _write_atomic("dashboard.json", json.dumps(snap, indent=2, default=str))
+    _write_atomic("dashboard.md", "```\n" + render(snap, color=False, max_tasks=20) + "\n```\n")
 
 
 def show(clear: bool = False) -> None:
