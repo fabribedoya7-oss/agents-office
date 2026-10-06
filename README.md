@@ -9,7 +9,7 @@ A headless multi-agent office for a recruitment agency, run from the terminal or
 - **4 departments:** Talent Marketing, Candidate Hub, Compliance, and Pay & Bill. Their agents write salary reports and job ads, screen resumes, check compliance documents, and run payroll and invoicing.
 - **MCP server:** Claude Code or Claude Desktop can run the whole office from a conversation: check status, run cycles, call tools, and submit drafts.
 - **Human approval gates:** job ads aren't published and invoices aren't released until a person approves them.
-- **Audit log:** every task keeps its status history, and all agent activity is appended to `workspace/logs/activity.jsonl`.
+- **Audit log:** every task keeps its status history, all agent activity is appended to `workspace/logs/activity.jsonl`, and every approval or rejection records who made it: the OS username from the CLI, or `claude-code (on human instruction)` from MCP.
 - **Real vs. draft labels:** the dashboard marks each task as REAL (a tool wrote files), CLAUDE DRAFT (text waiting for human review), or NO OUTPUT. Nothing is faked.
 - **Live office view:** `python office.py city` shows an isometric floor plan in your browser, with one room per department, a character at each agent's desk, and your approvals in the Manager's Office inbox tray.
 

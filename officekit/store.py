@@ -202,7 +202,8 @@ def pending_approvals() -> list[dict]:
     return [a for a in (_read(p, {}) for p in sorted(APPROVALS.glob("*.json"))) if a and a.get("decision") is None]
 
 
-def decide(task_id: str, approved: bool, note: str = "", by: str = "human") -> dict:
+def decide(task_id: str, approved: bool, by: str, note: str = "") -> dict:
+    """Record a decision. `by` is required so every approval says who made it (CLI: OS username, MCP: claude-code)."""
     p = APPROVALS / f"{task_id}.json"
     appr = _read(p, None)
     if not appr:

@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import argparse
+import getpass
 import json
 import shutil
 import sys
@@ -24,6 +25,14 @@ import time
 from officekit import config, store
 from officekit import dashboard as dash
 from officekit import orchestrator
+
+
+def _whoami() -> str:
+    """The OS username of whoever ran the command, recorded on approvals and rejections."""
+    try:
+        return getpass.getuser()
+    except Exception:
+        return "unknown user"
 
 
 def main(argv=None) -> int:
@@ -95,7 +104,7 @@ def main(argv=None) -> int:
         items = store.pending_approvals()
         print(json.dumps(items, indent=2) if items else "Nothing waiting for approval.")
     elif args.cmd in ("approve", "reject"):
-        store.decide(args.task_id, approved=args.cmd == "approve", note=args.note)
+        store.decide(args.task_id, approved=args.cmd == "approve", by=_whoami(), note=args.note)
         applied = orchestrator.apply_decisions()
         print(f"{args.task_id} {args.cmd}d" + (" and applied." if args.task_id in applied else "."))
     elif args.cmd == "requeue":

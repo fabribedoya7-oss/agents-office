@@ -48,12 +48,15 @@ def apply_decisions() -> list[str]:
             action = agent_spec(task["department"], task["agent"]).get("on_approve")
             outputs = POST_APPROVAL[action](a) if action else []
             store.update_task(task["id"], status="done", artifacts=outputs,
-                              note=f"approved by {a.get('by', 'human')}" + (f": {a['note']}" if a.get("note") else ""))
-            store.log(task["department"], task["agent"], f"approved, {action or 'no action'} -> {len(outputs)} file(s)",
+                              note=f"approved by {a.get('by', 'unknown')}" + (f": {a['note']}" if a.get("note") else ""))
+            store.log(task["department"], task["agent"],
+                      f"approved by {a.get('by', 'unknown')}, {action or 'no action'} -> {len(outputs)} file(s)",
                       task_id=task["id"])
         else:
-            store.update_task(task["id"], status="rejected", note=a.get("note") or "rejected")
-            store.log(task["department"], task["agent"], f"rejected: {a.get('note', '')}", task_id=task["id"])
+            store.update_task(task["id"], status="rejected",
+                              note=f"rejected by {a.get('by', 'unknown')}" + (f": {a['note']}" if a.get("note") else ""))
+            store.log(task["department"], task["agent"], f"rejected by {a.get('by', 'unknown')}: {a.get('note', '')}",
+                      task_id=task["id"])
         a["applied"] = store.now()
         f.write_text(json.dumps(a, indent=2))
         done.append(task["id"])
