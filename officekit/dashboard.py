@@ -23,9 +23,11 @@ def snapshot() -> dict:
         agents = []
         for a in d["agents"]:
             mine = [t for t in tasks if t["agent"] == a["id"]]
+            latest = max(mine, key=lambda t: t["updated"], default=None)
             state = ("working" if any(t["status"] == "running" for t in mine) else
                      "waiting on human" if any(t["status"] == "awaiting_approval" for t in mine) else
                      "blocked" if any(t["status"] == "blocked" for t in mine) else
+                     "failed" if latest and latest["status"] == "failed" else
                      "queued" if any(t["status"] == "queued" for t in mine) else "idle")
             agents.append({"id": a["id"], "name": a["name"], "state": state,
                            "mode": "claude" if a.get("needs_llm") else "pipeline",
@@ -36,11 +38,24 @@ def snapshot() -> dict:
     all_tasks = [t for d in depts for t in d["tasks"]]
     return {"generated": store.now(), "claude_connected": llm.available(), "model": llm.DEFAULT_MODEL,
             "departments": depts, "approvals": store.pending_approvals(), "activity": store.recent_logs(10),
+            "handoffs": _handoffs(all_tasks),
             "totals": {"tasks": len(all_tasks),
                        "real_work": sum(t["work_type"] == "real" for t in all_tasks),
                        "claude_drafts": sum(t["work_type"] == "llm" for t in all_tasks),
                        "no_output": sum(t["work_type"] == "placeholder" for t in all_tasks),
                        "artifacts": sum(len(t["artifacts"]) for t in all_tasks)}}
+
+
+def _handoffs(all_tasks: list[dict], limit: int = 50) -> list[dict]:
+    """Tasks one agent created for another department (created_by is "<agent>:<source task id>")."""
+    dept_of = {t["id"]: t["department"] for t in all_tasks}
+    out = []
+    for t in all_tasks:
+        agent, _, src = t.get("created_by", "").partition(":")
+        if src in dept_of and dept_of[src] != t["department"]:
+            out.append({"task_id": t["id"], "from_department": dept_of[src], "from_agent": agent, "from_task": src,
+                        "to_department": t["department"], "to_agent": t["agent"], "at": t["created"]})
+    return sorted(out, key=lambda h: h["at"])[-limit:]
 
 
 def _c(text: str, color: str, on: bool) -> str:
@@ -64,7 +79,7 @@ def render(snap: dict, color: bool = True, max_tasks: int = 6) -> str:
         counts = "  ".join(_c(f"{k} {v}", STATUS_COLOR[k], color) for k, v in sorted(d["counts"].items()))
         out.append(_c(d["name"].upper(), "bold", color) + "   " + (counts or _c("no tasks", "dim", color)))
         for a in d["agents"]:
-            sc = {"working": "cyan", "waiting on human": "yellow", "blocked": "magenta",
+            sc = {"working": "cyan", "waiting on human": "yellow", "blocked": "magenta", "failed": "red",
                   "queued": "grey", "idle": "dim"}[a["state"]]
             out.append(f"  ● {a['name']:<22}" + _c(f"{a['state']:<17}", sc, color)
                        + _c(f"{a['mode']:<9}", "dim", color) + f"{a['done']} done")

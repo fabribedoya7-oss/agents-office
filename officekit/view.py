@@ -1,6 +1,6 @@
-"""`office.py city`: a live 3D neon city view of the office.
+"""`office.py city` (alias `office.py view`): a live isometric floor plan of the office.
 
-Standard library only. Serves one page (officekit/web/city.html) and workspace/dashboard.json on
+Standard library only. Serves one page (officekit/web/office.html) and workspace/dashboard.json on
 127.0.0.1, and refreshes the snapshot in the background so the page always reads current state.
 """
 from __future__ import annotations
@@ -13,7 +13,7 @@ import webbrowser
 from . import dashboard as dash
 from . import store
 
-PAGE = store.ROOT / "officekit" / "web" / "city.html"
+PAGE = store.ROOT / "officekit" / "web" / "office.html"
 
 
 def _refresh_loop(interval: float, stop: threading.Event) -> None:
@@ -24,7 +24,7 @@ def _refresh_loop(interval: float, stop: threading.Event) -> None:
             last_error = None
         except Exception as e:  # keep serving the last good snapshot; report each new error once
             if str(e) != last_error:
-                print(f"[city] snapshot refresh failed: {e}", file=sys.stderr)
+                print(f"[office view] snapshot refresh failed: {e}", file=sys.stderr)
                 last_error = str(e)
 
 
@@ -67,13 +67,13 @@ def serve(port: int = 8765, open_browser: bool = True, interval: float = 2.0) ->
     url = f"http://127.0.0.1:{server.server_address[1]}/"
     stop = threading.Event()
     threading.Thread(target=_refresh_loop, args=(interval, stop), daemon=True).start()
-    print(f"Agents Office city: {url}  (Ctrl+C to stop)")
+    print(f"Agents Office floor: {url}  (Ctrl+C to stop)")
     if open_browser:
         threading.Timer(0.5, webbrowser.open, args=(url,)).start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        print("\nCity closed.")
+        print("\nOffice view closed.")
     finally:
         stop.set()
         server.server_close()
