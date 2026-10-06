@@ -1,5 +1,19 @@
 # Agents Office
 
+## What this is
+
+A headless multi-agent office for a recruitment agency, run from the terminal or from Claude over MCP.
+
+- **4 departments:** Talent Marketing, Candidate Hub, Compliance, and Pay & Bill. Their agents write salary reports and job ads, screen resumes, check compliance documents, and run payroll and invoicing.
+- **MCP server:** Claude Code or Claude Desktop can run the whole office from a conversation: check status, run cycles, call tools, and submit drafts.
+- **Human approval gates:** job ads aren't published and invoices aren't released until a person approves them.
+- **Audit log:** every task keeps its status history, and all agent activity is appended to `workspace/logs/activity.jsonl`.
+- **Real vs. draft labels:** the dashboard marks each task as REAL (a tool wrote files), CLAUDE DRAFT (text waiting for human review), or NO OUTPUT. Nothing is faked.
+
+All people, clients, resumes, documents, rates and timesheets in this repo are **fictional sample data**.
+
+## Overview
+
 A headless multi-agent system for a recruitment agency. Departments and agents are defined in YAML,
 state lives in plain files, Claude is the orchestrator (through the API or through MCP from Claude Code),
 and a terminal dashboard shows what every agent is doing and whether its output is real.
