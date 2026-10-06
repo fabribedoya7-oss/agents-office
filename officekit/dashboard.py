@@ -36,7 +36,8 @@ def snapshot() -> dict:
                       "counts": dict(Counter(t["status"] for t in tasks)),
                       "tasks": sorted(tasks, key=lambda t: t["updated"], reverse=True)})
     all_tasks = [t for d in depts for t in d["tasks"]]
-    return {"generated": store.now(), "claude_connected": llm.available(), "model": llm.DEFAULT_MODEL,
+    return {"company": store.COMPANY, "generated": store.now(), "claude_connected": llm.available(),
+            "model": llm.DEFAULT_MODEL,
             "departments": depts, "approvals": store.pending_approvals(), "activity": store.recent_logs(10),
             "handoffs": _handoffs(all_tasks),
             "totals": {"tasks": len(all_tasks),
@@ -68,7 +69,7 @@ def render(snap: dict, color: bool = True, max_tasks: int = 6) -> str:
     tot = snap["totals"]
     mode = (_c(f"Claude connected ({snap['model']})", "green", color) if snap["claude_connected"]
             else _c("Claude not connected: pipeline agents run, Claude-only agents are blocked", "yellow", color))
-    out.append(_c("AGENTS OFFICE", "bold", color) + _c(f"  ·  {snap['generated']}", "dim", color))
+    out.append(_c("AGENTS OFFICE", "bold", color) + _c(f"  ·  {snap.get('company')}  ·  {snap['generated']}", "dim", color))
     out.append(mode)
     out.append(f"{tot['tasks']} tasks · " + _c(f"{tot['real_work']} real work", "green", color) + " · "
                + _c(f"{tot['claude_drafts']} Claude drafts", "blue", color) + " · "

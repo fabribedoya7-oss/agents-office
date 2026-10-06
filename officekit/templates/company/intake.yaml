@@ -1,0 +1,7 @@
+# Intake rules: the watcher turns new files under workspace/ into tasks.
+# {path} = file path relative to workspace/, {stem} = file name without extension, {name} = file name,
+# {parent} = name of the folder the file is in.
+rules:
+  - watch: inbox/notes/*
+    tasks:
+      - {department: operations, agent: inbox_clerk, title: "Log {name}", input: {document: "{path}", name: "{stem}"}}

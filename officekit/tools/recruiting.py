@@ -10,7 +10,9 @@ import yaml
 from .. import store
 from . import tool
 
-CANDIDATES = store.WS / "data" / "candidates.json"
+
+def _candidates_file():  # per company: resolved at call time, not import time
+    return store.WS / "data" / "candidates.json"
 
 
 def _check_requirements(order: dict, field: str) -> None:
@@ -112,12 +114,12 @@ def screen_resume(resume_path: str, job_order_path: str) -> dict:
 
 
 def _load() -> list[dict]:
-    return json.loads(CANDIDATES.read_text()) if CANDIDATES.exists() else []
+    return json.loads(_candidates_file().read_text()) if _candidates_file().exists() else []
 
 
 def _save(rows: list[dict]) -> None:
-    CANDIDATES.parent.mkdir(parents=True, exist_ok=True)
-    CANDIDATES.write_text(json.dumps(rows, indent=2))
+    _candidates_file().parent.mkdir(parents=True, exist_ok=True)
+    _candidates_file().write_text(json.dumps(rows, indent=2))
 
 
 @tool("Add or update a candidate in the tracker (workspace/data/candidates.json).",
@@ -129,7 +131,7 @@ def upsert_candidate(record: dict) -> dict:
     record = {**record, "updated": store.now()}
     rows.append(record)
     _save(rows)
-    return {"path": store.rel(CANDIDATES), "candidate_id": record["candidate_id"], "status": record.get("status")}
+    return {"path": store.rel(_candidates_file()), "candidate_id": record["candidate_id"], "status": record.get("status")}
 
 
 @tool("Set a candidate's pipeline status (e.g. cleared, docs_missing, placed).",
@@ -144,4 +146,4 @@ def update_candidate_status(candidate_id: str, status: str) -> dict:
     if not hit:
         raise KeyError(f"candidate {candidate_id} not in tracker")
     _save(rows)
-    return {"path": store.rel(CANDIDATES), "candidate_id": candidate_id, "status": status}
+    return {"path": store.rel(_candidates_file()), "candidate_id": candidate_id, "status": status}

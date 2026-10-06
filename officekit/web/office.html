@@ -106,7 +106,7 @@
 <canvas id="floor"></canvas>
 
 <section id="hud" class="card">
-  <h1>Agents Office</h1>
+  <h1 id="company">Agents Office</h1>
   <div class="sub"><span id="live">connecting…</span> · <span id="claude"></span></div>
   <div id="totals"></div>
   <dl id="legend">
@@ -750,6 +750,8 @@ $("close").addEventListener("click", () => { selected = null; renderPanel(); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") { selected = null; renderPanel(); } });
 
 function renderHud(s) {
+  $("company").textContent = s.company || "Agents Office";
+  document.title = (s.company ? s.company + " · " : "") + "Agents Office Floor";
   $("claude").textContent = s.claude_connected ? `Claude connected (${s.model})` : "Claude not connected";
   const t = s.totals || {};
   $("totals").replaceChildren(

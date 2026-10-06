@@ -1,13 +1,18 @@
 __pycache__/
 *.lock
-workspace/tasks/
-workspace/approvals/
-workspace/logs/
-workspace/outputs/
-workspace/state.json
-workspace/dashboard.*
-workspace/data/candidates.json
-workspace/data/salary_cache.json
+*.tmp
+
+# generated office state, for every company under companies/<name>/workspace/
+companies/*/workspace/tasks/
+companies/*/workspace/approvals/
+companies/*/workspace/logs/
+companies/*/workspace/outputs/
+companies/*/workspace/state.json
+companies/*/workspace/dashboard.*
+companies/*/workspace/data/candidates.json
+companies/*/workspace/data/salary_cache.json
+
+# secrets and machine-specific files
 .env
 .mcp.json
 .venv/

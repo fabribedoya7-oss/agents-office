@@ -1,0 +1,2 @@
+# Engine settings. Companies live in companies/<name>/; commands use this one unless given --company.
+default_company: recruitment-demo

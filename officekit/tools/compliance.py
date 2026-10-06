@@ -9,7 +9,11 @@ from .. import store
 from . import tool
 from .recruiting import read_job_order
 
-PROFILES = store.WS / "data" / "compliance_profiles.yaml"
+
+def _profiles_file():  # per company: resolved at call time, not import time
+    return store.WS / "data" / "compliance_profiles.yaml"
+
+
 EXPIRY_WARNING_DAYS = 30
 
 
@@ -19,7 +23,7 @@ EXPIRY_WARNING_DAYS = 30
 def check_compliance(candidate_id: str, job_order_path: str, today: str | None = None) -> dict:
     order = read_job_order(job_order_path)
     profile_name = order.get("compliance_profile", "default")
-    profiles = yaml.safe_load(PROFILES.read_text())
+    profiles = yaml.safe_load(_profiles_file().read_text())
     required = profiles.get(profile_name) or profiles["default"]
 
     folder = store.WS / "documents" / candidate_id

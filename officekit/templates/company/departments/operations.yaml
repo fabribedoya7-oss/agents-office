@@ -1,0 +1,24 @@
+# Example department. Copy this file to add more departments; every *.yaml here becomes a room in
+# `python office.py city` and a section in the dashboard.
+id: operations
+name: Operations
+agents:
+  - id: inbox_clerk
+    name: Inbox Clerk
+    needs_llm: false           # a pipeline agent: runs without an API key
+    tools: [read_document, save_report, complete_task]
+    approval: none             # set to `required` (plus request_approval in tools) for anything risky
+    # Deterministic pipeline: each step calls one tool; save_as keeps the result for later steps.
+    pipeline:
+      - tool: read_document
+        args: {path: "{input.document}"}
+        save_as: doc
+      - tool: save_report
+        args:
+          kind: intake
+          name: "{input.name}"
+          data: {path: "{doc.path}", words: "{doc.words}", lines: "{doc.lines}", first_line: "{doc.first_line}"}
+    system: |
+      You are the Inbox Clerk for {{company_title}}. Read the document in the task with read_document and
+      save a short intake report with save_report (kind "intake"): what the document is, who it is from if
+      stated, and anything that needs a decision. Don't invent facts that aren't in the document.

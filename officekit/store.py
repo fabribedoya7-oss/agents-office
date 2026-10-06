@@ -1,20 +1,68 @@
-"""File-based state: tasks, logs, approvals. Everything is plain JSON/JSONL in workspace/."""
+"""File-based state: tasks, logs, approvals. Everything is plain JSON/JSONL in the company's workspace/.
+
+The engine can hold several companies under companies/<name>/ (departments/, intake.yaml, workspace/).
+use_company() selects one; the path globals below (COMPANY_DIR, WS, TASKS, ...) then point into it, so
+always read them as store.WS etc. at call time, never copy them at import time.
+"""
 from __future__ import annotations
 
 import json
 import os
+import re
 import time
 import uuid
 from contextlib import contextmanager
 from pathlib import Path
 
-ROOT = Path(os.environ.get("OFFICE_ROOT", Path(__file__).resolve().parent.parent))
-WS = ROOT / "workspace"
-TASKS = WS / "tasks"
-APPROVALS = WS / "approvals"
-LOGS = WS / "logs"
-OUTPUTS = WS / "outputs"
-STATE = WS / "state.json"
+import yaml
+
+ROOT = Path(os.environ.get("OFFICE_ROOT", Path(__file__).resolve().parent.parent))   # engine root
+COMPANIES = ROOT / "companies"
+OFFICE_CONFIG = ROOT / "office.yaml"
+COMPANY_NAME = re.compile(r"^[a-z0-9][a-z0-9-]{0,39}$")
+
+COMPANY: str | None = None
+COMPANY_DIR = WS = TASKS = APPROVALS = LOGS = OUTPUTS = STATE = None  # set by use_company()
+
+
+def companies() -> list[str]:
+    """Every company folder that has a departments/ directory."""
+    if not COMPANIES.is_dir():
+        return []
+    return sorted(p.name for p in COMPANIES.iterdir() if (p / "departments").is_dir())
+
+
+def default_company() -> str | None:
+    """OFFICE_COMPANY env var, else default_company in office.yaml, else the only company there is."""
+    if os.environ.get("OFFICE_COMPANY"):
+        return os.environ["OFFICE_COMPANY"]
+    if OFFICE_CONFIG.exists():
+        name = (yaml.safe_load(OFFICE_CONFIG.read_text()) or {}).get("default_company")
+        if name:
+            return name
+    found = companies()
+    return found[0] if len(found) == 1 else None
+
+
+def use_company(name: str | None = None) -> str:
+    """Point every path at companies/<name>/. Raises ValueError for a missing or unknown company."""
+    global COMPANY, COMPANY_DIR, WS, TASKS, APPROVALS, LOGS, OUTPUTS, STATE
+    name = name or default_company()
+    if not name:
+        raise ValueError("no company selected: pass --company <name> or set default_company in office.yaml")
+    if not COMPANY_NAME.match(name) or not (COMPANIES / name / "departments").is_dir():
+        raise ValueError(f"unknown company {name!r}; companies: {', '.join(companies()) or 'none'}")
+    COMPANY, COMPANY_DIR = name, COMPANIES / name
+    WS = COMPANY_DIR / "workspace"
+    TASKS, APPROVALS, LOGS, OUTPUTS = WS / "tasks", WS / "approvals", WS / "logs", WS / "outputs"
+    STATE = WS / "state.json"
+    return name
+
+
+try:  # select the default company on import so library use works without extra setup
+    use_company()
+except ValueError:
+    pass
 
 STATUSES = ["queued", "running", "awaiting_approval", "blocked", "done", "failed", "rejected"]
 # work_type tells the dashboard what actually happened:

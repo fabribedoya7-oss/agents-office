@@ -1,4 +1,4 @@
-"""Generic tools: drafts, reports, task creation, approvals, completion."""
+"""Generic tools: documents, drafts, reports, task creation, approvals, completion."""
 from __future__ import annotations
 
 import json
@@ -11,6 +11,20 @@ from . import tool
 
 def _slug(s: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", str(s).lower()).strip("-") or "item"
+
+
+@tool("Read a document from the workspace (.txt, .md, .pdf, .docx): its text plus basic facts "
+      "(characters, words, lines, first line).",
+      {"path": {"type": "string", "description": "path relative to workspace/, e.g. inbox/notes/hello.txt"}})
+def read_document(path: str) -> dict:
+    from .recruiting import extract_text
+    p = store.ws_path(path)
+    if not p.is_file():
+        raise FileNotFoundError(f"document not found: {path}")
+    text = extract_text(p)
+    lines = [ln for ln in text.splitlines() if ln.strip()]
+    return {"path": store.rel(p), "chars": len(text), "words": len(text.split()), "lines": len(lines),
+            "first_line": lines[0].strip()[:200] if lines else "", "text": text[:12000]}
 
 
 @tool("Save a markdown draft (e.g. a job ad) to outputs/drafts/. Returns the file path.",

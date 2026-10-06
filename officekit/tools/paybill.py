@@ -7,12 +7,16 @@ from collections import defaultdict
 from .. import store
 from . import tool
 
-RATES = store.WS / "data" / "rates.csv"
+
+def _rates_file():  # per company: resolved at call time, not import time
+    return store.WS / "data" / "rates.csv"
+
+
 MAX_WEEKLY_HOURS = 60
 
 
 def _rates() -> dict[tuple[str, str], dict]:
-    with open(RATES, newline="") as fh:
+    with open(_rates_file(), newline="") as fh:
         return {(r["candidate_id"], r["client"]): r for r in csv.DictReader(fh)}
 
 

@@ -17,8 +17,15 @@ import yaml
 from .. import store
 from . import tool
 
-CACHE = store.WS / "data" / "salary_cache.json"
-SOC_MAP = store.WS / "data" / "soc_map.yaml"
+
+def _cache_file():
+    return store.WS / "data" / "salary_cache.json"
+
+
+def _soc_map_file():
+    return store.WS / "data" / "soc_map.yaml"
+
+
 API = "https://api.bls.gov/publicAPI/v2/timeseries/data/"
 # OEWS datatype codes (national, all industries)
 DATATYPES = {"03": "hourly_mean", "07": "hourly_p25", "08": "hourly_median", "09": "hourly_p75",
@@ -26,7 +33,7 @@ DATATYPES = {"03": "hourly_mean", "07": "hourly_p25", "08": "hourly_median", "09
 
 
 def _soc_for(title: str) -> tuple[str, str] | None:
-    table = yaml.safe_load(SOC_MAP.read_text())
+    table = yaml.safe_load(_soc_map_file().read_text())
     t = title.lower()
     for row in table:
         if any(k in t for k in row["keywords"]):
@@ -63,7 +70,7 @@ def get_salary_benchmark(job_title: str) -> dict:
     if not hit:
         raise LookupError(f"no SOC code mapped for '{job_title}'. Add keywords to workspace/data/soc_map.yaml")
     soc, soc_title = hit
-    cache = json.loads(CACHE.read_text()) if CACHE.exists() else {}
+    cache = json.loads(_cache_file().read_text()) if _cache_file().exists() else {}
     source = "BLS OEWS (cached)"
     if soc not in cache:
         try:
@@ -71,8 +78,8 @@ def get_salary_benchmark(job_title: str) -> dict:
         except Exception as e:  # network blocked, API limit, etc.
             raise RuntimeError(f"could not reach BLS for SOC {soc}: {e}. No benchmark produced.") from e
         cache[soc] = {**fetched, "fetched": store.now(), "soc_title": soc_title}
-        CACHE.parent.mkdir(parents=True, exist_ok=True)
-        CACHE.write_text(json.dumps(cache, indent=2))
+        _cache_file().parent.mkdir(parents=True, exist_ok=True)
+        _cache_file().write_text(json.dumps(cache, indent=2))
         source = "BLS OEWS (live)"
     c = cache[soc]
     return {"job_title": job_title, "soc": soc, "soc_title": c["soc_title"], "data_year": c["year"],

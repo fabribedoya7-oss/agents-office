@@ -1,14 +1,20 @@
-"""Loads departments/*.yaml and intake.yaml. Adding a department = adding a YAML file."""
+"""Loads the selected company's departments/*.yaml and intake.yaml. Adding a department = adding a YAML file."""
 from __future__ import annotations
 
 import yaml
 
-from .store import ROOT
+from . import store
+
+
+def _company_dir():
+    if store.COMPANY_DIR is None:
+        store.use_company()   # raises a clear error if no company is selected
+    return store.COMPANY_DIR
 
 
 def departments() -> dict[str, dict]:
     out = {}
-    for f in sorted((ROOT / "departments").glob("*.yaml")):
+    for f in sorted((_company_dir() / "departments").glob("*.yaml")):
         d = yaml.safe_load(f.read_text())
         out[d["id"]] = d
     return out
@@ -25,8 +31,8 @@ def agent_spec(dept: str, agent: str) -> dict:
 
 
 def intake_rules() -> list[dict]:
-    f = ROOT / "intake.yaml"
-    return yaml.safe_load(f.read_text()).get("rules", []) if f.exists() else []
+    f = _company_dir() / "intake.yaml"
+    return (yaml.safe_load(f.read_text()) or {}).get("rules", []) if f.exists() else []
 
 
 def validate() -> list[str]:

@@ -1,7 +1,8 @@
 """`office.py city` (alias `office.py view`): a live isometric floor plan of the office.
 
-Standard library only. Serves one page (officekit/web/office.html) and workspace/dashboard.json on
-127.0.0.1, and refreshes the snapshot in the background so the page always reads current state.
+Standard library only. Serves one page (officekit/web/office.html) and the selected company's
+workspace/dashboard.json on 127.0.0.1, and refreshes the snapshot in the background so the page always
+reads current state. One server shows one company; run another with --company for a second one.
 """
 from __future__ import annotations
 
@@ -9,11 +10,12 @@ import http.server
 import sys
 import threading
 import webbrowser
+from pathlib import Path
 
 from . import dashboard as dash
 from . import store
 
-PAGE = store.ROOT / "officekit" / "web" / "office.html"
+PAGE = Path(__file__).resolve().parent / "web" / "office.html"
 
 
 def _refresh_loop(interval: float, stop: threading.Event) -> None:
@@ -67,7 +69,7 @@ def serve(port: int = 8765, open_browser: bool = True, interval: float = 2.0) ->
     url = f"http://127.0.0.1:{server.server_address[1]}/"
     stop = threading.Event()
     threading.Thread(target=_refresh_loop, args=(interval, stop), daemon=True).start()
-    print(f"Agents Office floor: {url}  (Ctrl+C to stop)")
+    print(f"Agents Office floor ({store.COMPANY}): {url}  (Ctrl+C to stop)")
     if open_browser:
         threading.Timer(0.5, webbrowser.open, args=(url,)).start()
     try:
