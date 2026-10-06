@@ -84,7 +84,7 @@ def render(snap: dict, color: bool = True, max_tasks: int = 6) -> str:
         out.append(_c(f"           {a['summary'][:w - 12]}", "dim", color))
         for f in a["artifacts"][:4]:
             out.append(_c(f"           · workspace/{f}", "dim", color))
-        out.append(_c(f"           office approve {a['task_id']}   |   office reject {a['task_id']} --note \"...\"",
+        out.append(_c(f"           python office.py approve {a['task_id']}   |   python office.py reject {a['task_id']} --note \"...\"",
                       "cyan", color))
     if not snap["approvals"]:
         out.append(_c("  nothing waiting", "dim", color))

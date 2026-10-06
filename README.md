@@ -66,7 +66,7 @@ claude mcp add agents-office -- python /full/path/to/agents-office/mcp_server.py
 
 Then in Claude Code: "show me the office status", "run a cycle", "what needs approval?".
 Claude gets `office_status`, `office_run_cycle`, `office_add_task`, `office_call_tool`, `office_list_tools`,
-`office_approvals`, and `office_decide`. Requires `pip install mcp` (v1 or v2 both work).
+`office_approvals`, `office_decide`, and `office_submit_work` (lets Claude Code write a Claude-only task's draft itself, e.g. the job ad, and send it for approval without an API key). Requires `pip install mcp` (v1 or v2 both work).
 
 ## Adding a department
 
